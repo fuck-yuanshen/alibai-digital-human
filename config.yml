@@ -1,0 +1,49 @@
+LLM:
+  LLM_API_KEY_ENV: "DEEPSEEK_API_KEY"
+  LLM_BASE_URL: "https://api.deepseek.com"
+  LLM_MODEL_NAME: "deepseek-flash"
+  LLM_REASONING_EFFORT: "high"
+  LLM_THINKING_ENABLED: true
+
+ASR:
+  DASHSCOPE_ASR_MODEL: "paraformer-realtime-v2"
+  DASHSCOPE_ASR_FORMAT: "pcm"
+  DASHSCOPE_ASR_SAMPLE_RATE: 16000
+
+TTS:
+  DASHSCOPE_API_KEY_ENV: "DASHSCOPE_API_KEY"
+  DASHSCOPE_BASE_URL: "https://dashscope.aliyuncs.com/api/v1"
+  DASHSCOPE_MODEL: "cosyvoice-v2"
+  DASHSCOPE_VOICE: "libai_v2"
+  DASHSCOPE_LANGUAGE_TYPE: "Chinese"
+  DASHSCOPE_INSTRUCTIONS: ""
+  DASHSCOPE_OPTIMIZE_INSTRUCTIONS: true
+  DOUBAO_APPID: ""
+  DOUBAO_TOKEN: ""
+  BAIDU_API_KEY: ""
+  BAIDU_SECRET_KEY: ""
+
+DOWNLOAD:
+  BASE_URL: "https://huggingface.co/shibing624/ai-avatar-wav2lip/resolve/main"
+  
+  AVATARS:
+    wav2lip_avatar_wzj2cjl:
+      url_suffix: "wav2lip_avatar_wzj2cjl.zip"
+      path: "./data/wav2lip_avatar_wzj2cjl.zip"
+      size: "88.4 MB"
+      description: "以太李白"
+
+# 数字人配置
+AVATARS:
+  default_avatar: "ai_libai"
+  
+  avatars:
+    - id: "ai_libai"
+      name: "以太李白"
+      description: "跨越历史长河，与虚拟李白对话"
+      avatar_dir: "wav2lip_avatar_wzj2cjl"
+      image: "/data/wav2lip_avatar_wzj2cjl/full_imgs/00000000.png"
+      tts_config:
+        type: "dashscope"
+        voice: "libai_v2"
+

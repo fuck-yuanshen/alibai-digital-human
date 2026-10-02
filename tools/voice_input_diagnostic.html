@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语音输入诊断</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
+        dl { display: grid; grid-template-columns: 140px 1fr; gap: 8px 16px; }
+        dt { font-weight: 700; }
+        dd { margin: 0; }
+        button { min-height: 44px; padding: 0 18px; border: 0; border-radius: 6px; background: #111; color: #fff; cursor: pointer; }
+        button.listening { background: #b42318; }
+        #result { margin-top: 20px; padding: 16px 0; border-top: 1px solid #ddd; white-space: pre-wrap; }
+        .ok { color: #067647; }
+        .bad { color: #b42318; }
+    </style>
+</head>
+<body>
+    <h1>语音输入诊断</h1>
+    <dl>
+        <dt>安全上下文</dt><dd id="secure"></dd>
+        <dt>Web Speech</dt><dd id="speech"></dd>
+        <dt>麦克风 API</dt><dd id="media"></dd>
+        <dt>麦克风权限</dt><dd id="permission">检查中</dd>
+    </dl>
+    <button id="testButton" type="button">开始识别</button>
+    <div id="result" aria-live="polite">等待测试</div>
+
+    <script>
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const secure = document.getElementById('secure');
+        const speech = document.getElementById('speech');
+        const media = document.getElementById('media');
+        const permission = document.getElementById('permission');
+        const button = document.getElementById('testButton');
+        const result = document.getElementById('result');
+        let recognition = null;
+        let listening = false;
+
+        function showCapability(element, supported, successText, failureText) {
+            element.textContent = supported ? successText : failureText;
+            element.className = supported ? 'ok' : 'bad';
+        }
+
+        showCapability(secure, window.isSecureContext, '正常', '不可用，需要 HTTPS 或 localhost');
+        showCapability(speech, Boolean(SpeechRecognition), '支持', '不支持，请使用最新版 Chrome/Edge');
+        showCapability(media, Boolean(navigator.mediaDevices?.getUserMedia), '支持', '不支持');
+
+        if (navigator.permissions?.query) {
+            navigator.permissions.query({ name: 'microphone' }).then((status) => {
+                const render = () => {
+                    permission.textContent = status.state;
+                    permission.className = status.state === 'denied' ? 'bad' : 'ok';
+                };
+                status.onchange = render;
+                render();
+            }).catch(() => {
+                permission.textContent = '浏览器不提供查询结果';
+            });
+        } else {
+            permission.textContent = '浏览器不支持权限查询';
+        }
+
+        if (!SpeechRecognition || !window.isSecureContext) {
+            button.disabled = true;
+        } else {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'zh-CN';
+            recognition.continuous = false;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                listening = true;
+                button.classList.add('listening');
+                button.textContent = '停止识别';
+                result.textContent = '正在聆听';
+            };
+            recognition.onresult = (event) => {
+                result.textContent = Array.from(event.results)
+                    .map((item) => item[0].transcript)
+                    .join('');
+            };
+            recognition.onerror = (event) => {
+                result.textContent = `识别错误：${event.error}`;
+                result.className = 'bad';
+            };
+            recognition.onend = () => {
+                listening = false;
+                button.classList.remove('listening');
+                button.textContent = '开始识别';
+            };
+        }
+
+        button.addEventListener('click', () => {
+            result.className = '';
+            if (listening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        });
+    </script>
+</body>
+</html>
